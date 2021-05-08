@@ -48,7 +48,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         // We dont't need CSRF for this project.
         http.csrf().disable()
                 // Make sure we use stateless session; session won't be used to store user's state.
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 .and()
                 .authorizeRequests()
                 //允许任何人登录首页，注册界面
@@ -56,10 +56,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
                 .and()
                 //表单登录，失败返回登录界面，成功返回welcome界面
-                .formLogin().loginPage("/login")
-                .failureForwardUrl("/login")
-                .successForwardUrl("/welcome")
-                .and()
                 .logout().permitAll();
 
 

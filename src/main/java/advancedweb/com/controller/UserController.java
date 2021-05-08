@@ -1,22 +1,27 @@
 package advancedweb.com.controller;
 
 
+import advancedweb.com.service.JwtUserDetailsService;
 import advancedweb.com.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpSession;
 import java.util.Map;
 
+@CrossOrigin
 @RestController
 public class UserController {
     Logger logger= LoggerFactory.getLogger(UserController.class);
 
     private UserService userService;
+
 
     @Autowired
     public UserController(UserService userService){

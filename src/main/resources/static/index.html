@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>socket</title>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js">
+    </script>
+</head>
+<style>
+    .box{
+        text-align: center;
+    }
+</style>
+<body>
+<div class="box">
+<p>用户名</p>
+<input id="userName">
+</div>
+<div class="box">
+<p>密码</p>
+<input id="password">
+</div>
+<br>
+<div class="box">
+    <button id="loginBtn">登录</button>
+</div>
+</body>
+
+<script>
+    $(document).ready(function(){
+    var userName;
+    var token;
+        $("#loginBtn").click(function (){
+     var userName = $("#userName").val();
+     var password = $("#password").val();
+     var str = {"username":userName,"password":password};
+     $.ajax({
+         url:"http://localhost:8080/login",
+         type:"POST",
+         crossDomain: true,
+         contentType:"application/json",
+         dataType: "json",
+         data:JSON.stringify(str),
+         sync:false,
+         success:function (data) {
+             console.log(data)
+             console.log(data.status)
+             if (data.status==="success"){
+                 token=data.token
+                 console.log(token)
+                 var ws = new WebSocket("ws://localhost:8080/game/token="+token);
+                 ws.onopen = function () {
+                     //建立连接后需要做的事情
+                     console.log("socket连接成功")
+                 }
+                 ws.onclose = function () {
+
+                 }
+                 ws.onmessage = function (evt) {
+                     console.log("收到消息："+evt.data)
+                 }
+                 ws.onerror = function () {
+
+                 }
+             }
+         }
+     })
+    })
+
+
+    });
+</script>
+</html>

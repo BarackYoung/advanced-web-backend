@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,7 @@ public class JwtTokenUtil implements Serializable {
 
     private JwtConfigProperties jwtConfigProperties;
 
+    @Autowired
     public JwtTokenUtil(JwtConfigProperties jwtConfigProperties) {
         this.jwtConfigProperties = jwtConfigProperties;
     }

@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpSession;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,13 +58,13 @@ public class UserService {
 
     public Map<String,Object> login(String username, String password) {
         Map<String,Object> result = new HashMap<>();
-        UsernamePasswordAuthenticationToken uptoken = new UsernamePasswordAuthenticationToken(username,password);
-        Authentication authentication = authenticationManager.authenticate(uptoken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
         User user = userRepository.findByUsername(username);
         if (user!=null){
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             if (encoder.matches(password,user.getPassword())){
+                UsernamePasswordAuthenticationToken uptoken = new UsernamePasswordAuthenticationToken(username,password);
+                Authentication authentication = authenticationManager.authenticate(uptoken);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
                 String token = jwtTokenUtil.generateToken(user);
                 result.put("status","success");
                 result.put("token",token);

@@ -10,8 +10,15 @@
     .box{
         text-align: center;
     }
+    #loginZone{
+        display: block;
+    }
+    #chatZone{
+        display: none;
+    }
 </style>
 <body>
+<div id="loginZone">
 <div class="box">
 <p>用户名</p>
 <input id="userName">
@@ -24,13 +31,30 @@
 <div class="box">
     <button id="loginBtn">登录</button>
 </div>
+</div>
+
+<div id="chatZone">
+    <div class="inputArea">
+        <p>接收方：</p>
+        <input type="text" id="toUsername">
+        <p>消息内容：</p>
+        <input type="text" id="content">
+        <button type="submit" id="send">发送</button>
+    </div>
+    <p>接收到的数据:</p>
+    <div class="receiveArea">
+        <p>消息1</p>
+        <p>消息2</p>
+    </div>
+</div>
 </body>
 
 <script>
     $(document).ready(function(){
     var userName;
     var token;
-        $("#loginBtn").click(function (){
+        var ws;
+     $("#loginBtn").click(function (){
      var userName = $("#userName").val();
      var password = $("#password").val();
      var str = {"username":userName,"password":password};
@@ -48,10 +72,12 @@
              if (data.status==="success"){
                  token=data.token
                  console.log(token)
-                 var ws = new WebSocket("ws://localhost:8080/game/token="+token);
+                 ws = new WebSocket("ws://localhost:8080/game/token="+token);
                  ws.onopen = function () {
                      //建立连接后需要做的事情
                      console.log("socket连接成功")
+                     $("#loginZone").css("display","none");
+                     $("#chatZone").css("display","block");
                  }
                  ws.onclose = function () {
 
@@ -65,6 +91,10 @@
              }
          }
      })
+    })
+    $("#send").click(function () {
+        var messageContent = $("#content").val();
+        ws.send(messageContent)
     })
 
 

@@ -50,6 +50,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (authHeader!=null&&authHeader.startsWith(tokenHead)){
             String authToken=authHeader.substring(tokenHead.length());
             String username=jwtTokenUtil.getUsernameFromToken(authToken);
+            logger.info("过滤器获得的username:"+username);
+            logger.info("SecurityContextHolder.getContext().getAuthentication():");
             if (username!=null&& SecurityContextHolder.getContext().getAuthentication()==null){
                 UserDetails userDetails=this.jwtUserDetailsService.loadUserByUsername(username);
                 if(jwtTokenUtil.validateToken(authToken,userDetails)){
@@ -58,11 +60,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                                     null,userDetails.getAuthorities());
                     usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                    logger.info("正在将authToken："+authToken+"和对应的username："+username+"保存起来");
                     tokenMap.put(authToken,username);
                 }
             }
         }
-
+        logger.info("此时的tokenMap:"+tokenMap);
         filterChain.doFilter(request, response);
     }
 }

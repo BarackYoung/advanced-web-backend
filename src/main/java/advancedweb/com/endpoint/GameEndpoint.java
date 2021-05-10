@@ -30,6 +30,7 @@ public class GameEndpoint {
     public void onOpen(Session session,@PathParam("token") String token){
         logger.info("获得的token:"+token);
         token = token.substring(6);
+        logger.info("gameEndpoint中获取到的tokenMap:"+JwtRequestFilter.tokenMap);
         if (JwtRequestFilter.tokenMap.containsKey(token)){
             String userID = JwtRequestFilter.tokenMap.get(token);
             this.session = session;
@@ -53,10 +54,13 @@ public class GameEndpoint {
 
 
     }
+
     @OnMessage
-    public void onMessage(String message, Session session){
+    public void onMessage(String message, Session session,@PathParam("token") String token){
         logger.info("得到一条消息："+message);
+        logger.info("得到的token:"+token);
     }
+
     @OnClose
     public void onClose(){
 

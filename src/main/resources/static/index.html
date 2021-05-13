@@ -16,6 +16,10 @@
     #chatZone{
         display: none;
     }
+    #content{
+        width: 500px;
+        height: 300px;
+    }
 </style>
 <body>
 <div id="loginZone">
@@ -35,16 +39,14 @@
 
 <div id="chatZone">
     <div class="inputArea">
-        <p>接收方：</p>
-        <input type="text" id="toUsername">
         <p>消息内容：</p>
-        <input type="text" id="content">
+        <textarea name="" id="content" cols="30" rows="10"></textarea>
+        <br>
         <button type="submit" id="send">发送</button>
     </div>
     <p>接收到的数据:</p>
-    <div class="receiveArea">
-        <p>消息1</p>
-        <p>消息2</p>
+    <div class="receiveArea" id="receiveArea">
+
     </div>
 </div>
 </body>
@@ -72,7 +74,7 @@
              if (data.status==="success"){
                  token=data.token
                  console.log(token)
-                 ws = new WebSocket("ws://localhost:8080/game/token="+token);
+                 ws = new WebSocket("ws://localhost:8080/game/museum/token="+token);
                  ws.onopen = function () {
                      //建立连接后需要做的事情
                      console.log("socket连接成功")
@@ -84,6 +86,7 @@
                  }
                  ws.onmessage = function (evt) {
                      console.log("收到消息："+evt.data)
+                     $("#receiveArea").append("<p>"+evt.data+"</p>")
                  }
                  ws.onerror = function () {
 

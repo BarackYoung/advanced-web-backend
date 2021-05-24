@@ -82,7 +82,8 @@
                      $("#chatZone").css("display","block");
                  }
                  ws.onclose = function () {
-
+                     console.log("连接断开")
+                     $("#receiveArea").append("<p>连接断开</p>")
                  }
                  ws.onmessage = function (evt) {
                      console.log("收到消息："+evt.data)

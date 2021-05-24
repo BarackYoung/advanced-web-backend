@@ -2,20 +2,17 @@ package advancedweb.com.endpoint;
 
 
 import advancedweb.com.security.jwt.JwtRequestFilter;
-import advancedweb.com.security.jwt.JwtTokenUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-
-import javax.servlet.http.HttpSession;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,6 +31,9 @@ public class GameEndpoint {
     private String userID;
     private String scene;
     private String token;
+    private double x = 0.0;
+    private double y = 0.0;
+    private double z = 0.0;
 
     @OnOpen
     public void onOpen(Session session,@PathParam("token") String token,@PathParam("scene") String scene){
@@ -62,12 +62,34 @@ public class GameEndpoint {
              *发送一条系统消息通知同一场景的其他用户上线用户
              * */
             try {
-                Map<String,Object> message = MessageUtils.generateMessage(true,"online","System",userID);
+                Map<String,Object> message = MessageUtils.generateMessage(true,"online",userID,userID);
                 Map<String,GameEndpoint> onlineUsers = sceneAndOnlineUsers.get(scene);
                 for (Map.Entry<String,GameEndpoint> entry:onlineUsers.entrySet()){
-                    entry.getValue().session.getBasicRemote().sendText(MessageUtils.gson.toJson(message));
+                    if (!entry.getKey().equals(userID)){
+                        entry.getValue().session.getBasicRemote().sendText(MessageUtils.gson.toJson(message));
+                    }
                 }
             }catch (Exception e){
+                e.printStackTrace();
+            }
+            /**
+             * 发送一条通知告知当前用户其他用户的信息
+             * */
+                Map<String,GameEndpoint> onlineUsers = sceneAndOnlineUsers.get(scene);
+                List<String> list = new LinkedList<>();
+                for (Map.Entry<String,GameEndpoint> endpointEntry:onlineUsers.entrySet()){
+                    Map<String,Object> map = new HashMap<>();
+                    map.put("userID",endpointEntry.getValue().userID);
+                    map.put("x",endpointEntry.getValue().x);
+                    map.put("y",endpointEntry.getValue().y);
+                    map.put("z",endpointEntry.getValue().z);
+                    list.add(MessageUtils.gson.toJson(map));
+                }
+            Map<String,Object> message = MessageUtils.generateMessage(true,"coordinate","system",list);
+            logger.info("其他用户的信息："+message);
+                try {
+                this.session.getBasicRemote().sendText(MessageUtils.gson.toJson(message));
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -81,7 +103,6 @@ public class GameEndpoint {
         logger.info("得到一条消息："+message);
         logger.info("场景："+scene);
         Map<String,GameEndpoint> onlineUsers = sceneAndOnlineUsers.get(scene);
-//        String userID = JwtRequestFilter.tokenMap.get(token);
         Map<String,Object> messageMap = MessageUtils.gson.fromJson(message,Map.class);
         boolean isSystem = (boolean) messageMap.get("isSystem");
         String type = messageMap.get("type").toString();
@@ -96,10 +117,17 @@ public class GameEndpoint {
              * 坐标更新
              * */
             if (type.equals("coordinate")){
+                logger.info("得到的坐标更新："+content.toString());
+                Map<String,Double> coordinate = MessageUtils.gson.fromJson(content.toString(),Map.class);
+                this.x = coordinate.get("x");
+                this.y = coordinate.get("y");
+                this.z = coordinate.get("z");
                 Map<String,Object> sendMessageMap = MessageUtils.generateMessage(true,"coordinate",this.userID,content);
                 try {
                     for (Map.Entry<String,GameEndpoint> endpointEntry:onlineUsers.entrySet()){
-                        endpointEntry.getValue().session.getBasicRemote().sendText(MessageUtils.gson.toJson(sendMessageMap));
+                        if (!endpointEntry.getKey().equals(userID)){
+                            endpointEntry.getValue().session.getBasicRemote().sendText(MessageUtils.gson.toJson(sendMessageMap));
+                        }
                     }
                 }catch (Exception e){
                     e.printStackTrace();
@@ -110,13 +138,34 @@ public class GameEndpoint {
             /**
              * 发送信息给用户
              * */
+
           if (type.equals("chat")){
-              Map<String,Object> sendMessageMap = MessageUtils.generateMessage(false,"chat",this.userID,content);
-              if (onlineUsers.containsKey(toUsername)){
-                  try {
-                      onlineUsers.get(toUsername).session.getBasicRemote().sendText(MessageUtils.gson.toJson(sendMessageMap));
-                  } catch (IOException e) {
-                      e.printStackTrace();
+              if (toUsername.equals("system")){
+                  /**
+                   * 群发
+                   * */
+               Map<String,GameEndpoint> map = sceneAndOnlineUsers.get(scene);
+                  Map<String,Object> sendMessageMap = MessageUtils.generateMessage(false,"chat",this.userID,content);
+                  for (Map.Entry<String,GameEndpoint> entry:map.entrySet()){
+                      try {
+                          if (!entry.getKey().equals(userID)){
+                              entry.getValue().session.getBasicRemote().sendText(MessageUtils.gson.toJson(sendMessageMap));
+                          }
+                      } catch (IOException e) {
+                          e.printStackTrace();
+                      }
+                  }
+              }else {
+                  /**
+                   * 单发
+                   * */
+                  Map<String,Object> sendMessageMap = MessageUtils.generateMessage(false,"chat",this.userID,content);
+                  if (onlineUsers.containsKey(toUsername)){
+                      try {
+                          onlineUsers.get(toUsername).session.getBasicRemote().sendText(MessageUtils.gson.toJson(sendMessageMap));
+                      } catch (IOException e) {
+                          e.printStackTrace();
+                      }
                   }
               }
           }
@@ -131,15 +180,25 @@ public class GameEndpoint {
         Map<String,Object> sendMessageMap = MessageUtils.generateMessage(true,"offline",this.userID,this.userID);
         try {
             for (Map.Entry<String,GameEndpoint> endpointEntry:onlineUsers.entrySet()){
-                endpointEntry.getValue().session.getBasicRemote().sendText(MessageUtils.gson.toJson(sendMessageMap));
+                if (!endpointEntry.getKey().equals(userID)){
+                    endpointEntry.getValue().session.getBasicRemote().sendText(MessageUtils.gson.toJson(sendMessageMap));
+                }
             }
         }catch (Exception e){
             e.printStackTrace();
         }
+        onlineUsers.remove(userID);
+        onlineUsersAndScene.remove(userID);
     }
 
     @OnError
     public void onError(Throwable e){
 
+    }
+
+    public void setCoordinate(double x,double y,double z){
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
 }

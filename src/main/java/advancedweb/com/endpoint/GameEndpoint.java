@@ -31,9 +31,9 @@ public class GameEndpoint {
     private String userID;
     private String scene;
     private String token;
-    private double x = 0.0;
-    private double y = 0.0;
-    private double z = 0.0;
+    private double x = -300;
+    private double y = 10;
+    private double z = -100;
 
     @OnOpen
     public void onOpen(Session session,@PathParam("token") String token,@PathParam("scene") String scene){

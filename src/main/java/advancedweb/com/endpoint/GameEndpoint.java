@@ -138,7 +138,7 @@ public class GameEndpoint {
                      * 群发
                      * */
                     Map<String,GameEndpoint> map = sceneAndOnlineUsers.get(scene);
-                    Map<String,Object> sendMessageMap = MessageUtils.generateMessage(false,"chat",this.userID,content);
+                    Map<String,Object> sendMessageMap = MessageUtils.generateMessage(true,"chat",this.userID,content);
                     for (Map.Entry<String,GameEndpoint> entry:map.entrySet()){
                         try {
                             if (!entry.getKey().equals(userID)){

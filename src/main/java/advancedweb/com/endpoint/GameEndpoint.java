@@ -78,12 +78,14 @@ public class GameEndpoint {
                 Map<String,GameEndpoint> onlineUsers = sceneAndOnlineUsers.get(scene);
                 List<String> list = new LinkedList<>();
                 for (Map.Entry<String,GameEndpoint> endpointEntry:onlineUsers.entrySet()){
-                    Map<String,Object> map = new HashMap<>();
-                    map.put("userID",endpointEntry.getValue().userID);
-                    map.put("x",endpointEntry.getValue().x);
-                    map.put("y",endpointEntry.getValue().y);
-                    map.put("z",endpointEntry.getValue().z);
-                    list.add(MessageUtils.gson.toJson(map));
+                    if (!endpointEntry.getKey().equals(this.userID)){
+                        Map<String,Object> map = new HashMap<>();
+                        map.put("userID",endpointEntry.getValue().userID);
+                        map.put("x",endpointEntry.getValue().x);
+                        map.put("y",endpointEntry.getValue().y);
+                        map.put("z",endpointEntry.getValue().z);
+                        list.add(MessageUtils.gson.toJson(map));
+                    }
                 }
             Map<String,Object> message = MessageUtils.generateMessage(true,"coordinate","system",list);
             logger.info("其他用户的信息："+message);

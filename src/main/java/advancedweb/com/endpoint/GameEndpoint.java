@@ -133,6 +133,21 @@ public class GameEndpoint {
                     e.printStackTrace();
                 }
 
+            }else if (type.equals("chat")){
+                    /**
+                     * 群发
+                     * */
+                    Map<String,GameEndpoint> map = sceneAndOnlineUsers.get(scene);
+                    Map<String,Object> sendMessageMap = MessageUtils.generateMessage(false,"chat",this.userID,content);
+                    for (Map.Entry<String,GameEndpoint> entry:map.entrySet()){
+                        try {
+                            if (!entry.getKey().equals(userID)){
+                                entry.getValue().session.getBasicRemote().sendText(MessageUtils.gson.toJson(sendMessageMap));
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
             }
         }else {
             /**
@@ -140,22 +155,6 @@ public class GameEndpoint {
              * */
 
           if (type.equals("chat")){
-              if (toUsername.equals("system")){
-                  /**
-                   * 群发
-                   * */
-               Map<String,GameEndpoint> map = sceneAndOnlineUsers.get(scene);
-                  Map<String,Object> sendMessageMap = MessageUtils.generateMessage(false,"chat",this.userID,content);
-                  for (Map.Entry<String,GameEndpoint> entry:map.entrySet()){
-                      try {
-                          if (!entry.getKey().equals(userID)){
-                              entry.getValue().session.getBasicRemote().sendText(MessageUtils.gson.toJson(sendMessageMap));
-                          }
-                      } catch (IOException e) {
-                          e.printStackTrace();
-                      }
-                  }
-              }else {
                   /**
                    * 单发
                    * */
@@ -167,7 +166,6 @@ public class GameEndpoint {
                           e.printStackTrace();
                       }
                   }
-              }
           }
 
         }

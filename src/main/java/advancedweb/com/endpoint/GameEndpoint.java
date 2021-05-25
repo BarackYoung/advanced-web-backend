@@ -161,7 +161,7 @@ public class GameEndpoint {
                    * 单发
                    * */
                   Map<String,Object> sendMessageMap = MessageUtils.generateMessage(false,"chat",this.userID,content);
-                  if (onlineUsers.containsKey(toUsername)){
+                  if (onlineUsers.containsKey(toUsername)&&!this.userID.equals(toUsername)){
                       try {
                           onlineUsers.get(toUsername).session.getBasicRemote().sendText(MessageUtils.gson.toJson(sendMessageMap));
                       } catch (IOException e) {

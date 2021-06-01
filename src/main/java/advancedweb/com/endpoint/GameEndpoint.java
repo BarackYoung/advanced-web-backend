@@ -30,10 +30,12 @@ public class GameEndpoint {
     private Session session;
     private String userID;
     private String scene;
-    private String token;
     private double x = -300;
     private double y = 10;
     private double z = -100;
+    private double rx = 0;
+    private double ry = 380;
+    private double rz = 0;
 
     @OnOpen
     public void onOpen(Session session,@PathParam("token") String token,@PathParam("scene") String scene){
@@ -44,7 +46,6 @@ public class GameEndpoint {
             String userID = JwtRequestFilter.tokenMap.get(token);
             this.session = session;
             this.userID = userID;
-            this.token = token;
             this.scene = scene;
             /**
              * 将当前用户添加到对应的场景的在线用户中
@@ -84,6 +85,9 @@ public class GameEndpoint {
                         map.put("x",endpointEntry.getValue().x);
                         map.put("y",endpointEntry.getValue().y);
                         map.put("z",endpointEntry.getValue().z);
+                        map.put("rx",endpointEntry.getValue().rx);
+                        map.put("ry",endpointEntry.getValue().ry);
+                        map.put("rz",endpointEntry.getValue().rz);
                         list.add(MessageUtils.gson.toJson(map));
                     }
                 }
@@ -124,6 +128,9 @@ public class GameEndpoint {
                 this.x = coordinate.get("x");
                 this.y = coordinate.get("y");
                 this.z = coordinate.get("z");
+                this.rx = coordinate.get("rx");
+                this.ry = coordinate.get("ry");
+                this.rz = coordinate.get("rz");
                 Map<String,Object> sendMessageMap = MessageUtils.generateMessage(true,"coordinate",this.userID,content);
                 try {
                     for (Map.Entry<String,GameEndpoint> endpointEntry:onlineUsers.entrySet()){
@@ -196,9 +203,4 @@ public class GameEndpoint {
 
     }
 
-    public void setCoordinate(double x,double y,double z){
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
 }

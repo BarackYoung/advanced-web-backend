@@ -31,7 +31,7 @@ public class GameEndpoint {
     private String userID;
     private String scene;
     private double x = -300;
-    private double y = 10;
+    private double y = 0;
     private double z = -100;
     private double rx = 0;
     private double ry = 380;

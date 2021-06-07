@@ -1,7 +1,9 @@
 package advancedweb.com.service;
 
 
+import advancedweb.com.Entity.Log;
 import advancedweb.com.Entity.User;
+import advancedweb.com.dao.LogRepository;
 import advancedweb.com.dao.UserRepository;
 import advancedweb.com.security.jwt.JwtTokenUtil;
 import org.slf4j.Logger;
@@ -11,14 +13,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpSession;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -30,11 +30,14 @@ public class UserService {
 
     private AuthenticationManager authenticationManager;
 
+    private LogRepository logRepository;
+
     @Autowired
-    public UserService(UserRepository userRepository,JwtTokenUtil jwtTokenUtil,AuthenticationManager authenticationManager){
+    public UserService(UserRepository userRepository,JwtTokenUtil jwtTokenUtil,AuthenticationManager authenticationManager,LogRepository logRepository){
       this.userRepository = userRepository;
       this.jwtTokenUtil = jwtTokenUtil;
       this.authenticationManager = authenticationManager;
+      this.logRepository = logRepository;
     }
 
     public Map<String,Object> register(Map<String ,String> request) {
@@ -79,5 +82,26 @@ public class UserService {
 
        return result;
     }
+
+    /**
+     * 记录用户行为
+     * */
+    public void log(String log){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String time = simpleDateFormat.format(new Date(System.currentTimeMillis()));
+        UserDetails user = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username = user.getUsername();
+        Log myLog = new Log(username,time,log);
+        logRepository.save(myLog);
+    }
+    /**
+     * 获取行为记录
+     * */
+    public List<Log> getLog(){
+        UserDetails user = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String username = user.getUsername();
+        return logRepository.getAllByUsername(username);
+    }
+
 
 }

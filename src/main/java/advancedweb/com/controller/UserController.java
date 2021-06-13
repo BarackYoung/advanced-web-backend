@@ -51,4 +51,15 @@ public class UserController {
          return ResponseEntity.ok(userService.getLog());
     }
 
+    @GetMapping("/updatePoint")
+    public ResponseEntity<?> update(@RequestBody Map<String, String> map){
+        userService.updatePoint(map.get("username"), Integer.parseInt(map.get("point")));
+        return ResponseEntity.ok("ok");
+    }
+
+    @GetMapping("/getRankList")
+    public ResponseEntity<?> getRankList(){
+        return ResponseEntity.ok(userService.getRankList());
+    }
+
 }

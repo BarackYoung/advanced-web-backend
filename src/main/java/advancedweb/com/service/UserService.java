@@ -1,8 +1,10 @@
 package advancedweb.com.service;
 
 
+import advancedweb.com.Entity.Answerlogs;
 import advancedweb.com.Entity.Log;
 import advancedweb.com.Entity.User;
+import advancedweb.com.dao.AnsLogsRepository;
 import advancedweb.com.dao.LogRepository;
 import advancedweb.com.dao.UserRepository;
 import advancedweb.com.security.jwt.JwtTokenUtil;
@@ -32,12 +34,15 @@ public class UserService {
 
     private LogRepository logRepository;
 
+    private AnsLogsRepository ansLogsRepository;
+
     @Autowired
-    public UserService(UserRepository userRepository,JwtTokenUtil jwtTokenUtil,AuthenticationManager authenticationManager,LogRepository logRepository){
+    public UserService(UserRepository userRepository,JwtTokenUtil jwtTokenUtil,AuthenticationManager authenticationManager,LogRepository logRepository, AnsLogsRepository ansLogsRepository){
       this.userRepository = userRepository;
       this.jwtTokenUtil = jwtTokenUtil;
       this.authenticationManager = authenticationManager;
       this.logRepository = logRepository;
+      this.ansLogsRepository = ansLogsRepository;
     }
 
     public Map<String,Object> register(Map<String ,String> request) {
@@ -101,6 +106,38 @@ public class UserService {
         UserDetails user = (UserDetails)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = user.getUsername();
         return logRepository.getAllByUsername(username);
+    }
+
+    /**
+     * 更新用户成绩
+     */
+
+    public void updatePoint(String username, int point){
+        Answerlogs answerlogs = ansLogsRepository.findByUsername(username);
+        if(answerlogs == null){
+            Answerlogs answerlogs1 = new Answerlogs();
+            answerlogs1.setUsername(username);
+            answerlogs1.setHighest(point);
+            ansLogsRepository.save(answerlogs1);
+        }else {
+            if(answerlogs.getHighest() < point){
+                ansLogsRepository.updatePoint(answerlogs.getId(),point);
+            }
+        }
+    }
+
+    /**
+     * 获得排行榜
+     */
+    public List<Map<String,Integer>> getRankList(){
+        List<Answerlogs> list = ansLogsRepository.getAllByDESC();
+        List<Map<String, Integer>> ans = new ArrayList<>();
+        for(Answerlogs answerlogs:list){
+            Map<String,Integer> map = new HashMap<>();
+            map.put(answerlogs.getUsername(),answerlogs.getHighest());
+            ans.add(map);
+        }
+        return ans;
     }
 
 

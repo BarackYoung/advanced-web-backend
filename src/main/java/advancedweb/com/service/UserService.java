@@ -115,6 +115,7 @@ public class UserService {
     public void updatePoint(String username, int point){
         Answerlogs answerlogs = ansLogsRepository.findByUsername(username);
         if(answerlogs == null){
+            System.out.println("service:   "+username+"***"+point);
             Answerlogs answerlogs1 = new Answerlogs();
             answerlogs1.setUsername(username);
             answerlogs1.setHighest(point);
@@ -129,12 +130,13 @@ public class UserService {
     /**
      * 获得排行榜
      */
-    public List<Map<String,Integer>> getRankList(){
+    public List<Map<String,String>> getRankList(){
         List<Answerlogs> list = ansLogsRepository.getAllByDESC();
-        List<Map<String, Integer>> ans = new ArrayList<>();
+        List<Map<String, String>> ans = new ArrayList<>();
         for(Answerlogs answerlogs:list){
-            Map<String,Integer> map = new HashMap<>();
-            map.put(answerlogs.getUsername(),answerlogs.getHighest());
+            Map<String,String> map = new HashMap<>();
+            map.put("username",answerlogs.getUsername());
+            map.put("point",String.valueOf(answerlogs.getHighest()));
             ans.add(map);
         }
         return ans;

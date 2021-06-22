@@ -9,8 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @CrossOrigin
 @RestController
@@ -51,13 +55,25 @@ public class UserController {
          return ResponseEntity.ok(userService.getLog());
     }
 
-    @GetMapping("/updatePoint")
-    public ResponseEntity<?> update(@RequestBody Map<String, String> map){
-        userService.updatePoint(map.get("username"), Integer.parseInt(map.get("point")));
+    @PostMapping("/updatePoint")
+    public ResponseEntity<?> update(HttpServletRequest request){
+
+
+        Map<String,String> map = new HashMap<>();
+        Enumeration<String> er = request.getParameterNames();
+        while (er.hasMoreElements()) {
+            String name = (String) er.nextElement();
+            String value = request.getParameter(name);
+            System.out.println(name+"---------"+value);
+            map.put(name,value);
+        }
+
+
+        userService.updatePoint(map.get("identity"), Integer.parseInt(map.get("points")));
         return ResponseEntity.ok("ok");
     }
 
-    @GetMapping("/getRankList")
+    @PostMapping("/getRankList")
     public ResponseEntity<?> getRankList(){
         return ResponseEntity.ok(userService.getRankList());
     }
